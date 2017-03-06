@@ -1,5 +1,8 @@
 package com.cold.push.server;
 
+import com.cold.push.constant.PushConstants;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
@@ -7,8 +10,11 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
+ * push监听(应用服务器向DDPUSH服务器推送)
  * Created by faker on 2017/3/4.
  */
 public class PushListener implements Runnable{
@@ -17,10 +23,15 @@ public class PushListener implements Runnable{
     private volatile boolean stop;
     private ServerSocketChannel serverSocketChannel;
     private Selector selector;
+    private ExecutorService pushPool;
+
+    public PushListener() {
+        init();
+    }
 
     @Override
     public void run() {
-        init();
+
         System.out.println("push listener port:" + PORT);
 
         while (!stop && selector != null) {
@@ -31,7 +42,13 @@ public class PushListener implements Runnable{
     }
 
     private void init() {
+        initPool();
         initChannel();
+    }
+
+    private void initPool() {
+        pushPool = Executors.newFixedThreadPool(PushConstants.PUSH_LISTENER_MAX_THREAD,
+                new ThreadFactoryBuilder().setNameFormat("push-pool-%d").build());
     }
 
     private void initChannel() {
@@ -91,8 +108,13 @@ public class PushListener implements Runnable{
 
             PushTask task = new PushTask(this, socketChannel);
             socketChannel.register(selector, SelectionKey.OP_READ, task);
-        } else if (key.isReadable() || key.isWritable()) {
 
+        } else if (key.isReadable() || key.isWritable()) { //表示准备读取APPServer发来消息，或消息已经接收完毕准备回应APPServer
+            PushTask pushTask = (PushTask) key.attachment();
+            pushTask.setKey(key);
+
+            // 向终端推送消息 当然这里面包含读取APPServer发来的消息、响应APPServer等流程
+            pushPool.execute(pushTask);
         }
     }
 

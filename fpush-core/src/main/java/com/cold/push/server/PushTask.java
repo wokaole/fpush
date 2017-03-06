@@ -73,7 +73,19 @@ public class PushTask implements Runnable{
         buffer.get(data);
         buffer.clear();
 
-        
+        PushMessage pushMessage = new PushMessage(data);
+        String uuid = pushMessage.getUuidHexString();
+
+        NodeStatus nodeStat = NodeStatus.getInstance();
+        ClientStatMachine client = nodeStat.getClientStat(uuid);
+
+        if (client == null) {
+            client = ClientStatMachineFactory.create(pushMessage);
+        }
         return 0;
+    }
+
+    public void setKey(SelectionKey key) {
+        this.key = key;
     }
 }

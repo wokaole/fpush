@@ -24,6 +24,10 @@ public class NodeStatus {
         return nodeStat.get(uuid);
     }
 
+    public void putClientStat(String uuid, ClientStatMachine client) {
+        nodeStat.put(uuid, client);
+    }
+
     private static class NodeStatusHolder{
         private static final NodeStatus INSTANCE = new NodeStatus();
     }

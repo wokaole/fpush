@@ -12,6 +12,7 @@ public class PushConstants {
     public static final int CMD_0x10 = 16;// 通用信息
     public static final int CMD_0x11 = 17;// 分类信息
     public static final int CMD_0x20 = 32;// 自定义信息
+    public static final int SERVER_MESSAGE_MIN_LENGTH = 5; //服务器消息最小长度，通用命令时5
 
     private PushConstants() {
 

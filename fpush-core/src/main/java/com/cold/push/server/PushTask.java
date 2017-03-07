@@ -81,7 +81,10 @@ public class PushTask implements Runnable{
 
         if (client == null) {
             client = ClientStatMachineFactory.create(pushMessage);
+            nodeStat.putClientStat(uuid, client);
         }
+
+        client.push(pushMessage);
         return 0;
     }
 

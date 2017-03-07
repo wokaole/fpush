@@ -1,6 +1,6 @@
 package com.cold.push.server;
 
-import org.apache.commons.lang3.StringUtils;
+import java.nio.ByteBuffer;
 
 /**
  * server->client消息体
@@ -26,5 +26,16 @@ public class PushMessage {
 
     public void setCmd(int cmd) {
         this.cmd = cmd;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    /**
+     * 取得具体内容长度
+     */
+    public int getContentLength() {
+        return (int) ByteBuffer.wrap(data, 19, 2).getChar();
     }
 }
